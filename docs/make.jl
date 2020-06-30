@@ -1,6 +1,7 @@
 using Gaussians
 using Documenter
 
+DocMeta.setdocmeta!(Gaussians, :DocTestSetup, :(using Gaussians); recursive=true)
 makedocs(;
     modules=[Gaussians],
     authors="Stefanos Carlström <stefanos.carlstrom@gmail.com> and contributors",
@@ -10,6 +11,7 @@ makedocs(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://juliaatoms.org/Gaussians.jl",
         assets=String[],
+        mathengine = Documenter.MathJax()
     ),
     pages=[
         "Home" => "index.md",
