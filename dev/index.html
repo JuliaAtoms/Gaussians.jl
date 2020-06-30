@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Home · Gaussians.jl</title><link rel="canonical" href="https://juliaatoms.org/Gaussians.jl/"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">Gaussians.jl</span></div><form class="docs-search" action="search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>Home</a><ul class="internal"><li><a class="tocitem" href="#Simple-usage"><span>Simple usage</span></a></li><li><a class="tocitem" href="#Reference"><span>Reference</span></a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Home</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Home</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaAtoms/Gaussians.jl/blob/master/docs/src/index.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Gaussians"><a class="docs-heading-anchor" href="#Gaussians">Gaussians</a><a id="Gaussians-1"></a><a class="docs-heading-anchor-permalink" href="#Gaussians" title="Permalink"></a></h1><h2 id="Simple-usage"><a class="docs-heading-anchor" href="#Simple-usage">Simple usage</a><a id="Simple-usage-1"></a><a class="docs-heading-anchor-permalink" href="#Simple-usage" title="Permalink"></a></h2><p>This is the HeH⁺ example of Szabo &amp; Ostlund (1996), where the two constituent atoms are modelled by one STO-3G orbital each.</p><pre><code class="language-julia-repl">julia&gt; using Gaussians
+
+julia&gt; using LinearAlgebra
+
+julia&gt; R = [0.0, 1.4632] # Positions of the nuclei
+2-element Array{Float64,1}:
+ 0.0
+ 1.4632
+
+julia&gt; ζ = [2.0925, 1.24] # Exponents
+2-element Array{Float64,1}:
+ 2.0925
+ 1.24
+
+julia&gt; Z = [2.0, 1.0] # Nuclear charges
+2-element Array{Float64,1}:
+ 2.0
+ 1.0
+
+julia&gt; Φ = [sto_g(3, R[i], ζ[i]) for i = 1:2]
+2-element Array{STO_NG{Float64,Float64},1}:
+ STO-3G basis function: [0.18298567211025116×1s(0.48084429026249986), 0.5871364000040699×1s(1.7766911481187495), 0.6070752318149509×1s(9.753934615874998)]
+ STO-3G basis function: [0.08347403618820594×1s(0.16885615680000002), 0.2678387030861255×1s(0.6239134896), 0.27693435931394883×1s(3.4252500160000006)]</code></pre><p>With the basis defined, we can compute the various integrals:</p><pre><code class="language-julia-repl">julia&gt; S = Matrix(Φ&#39;, I, Φ)
+2×2 Array{Float64,2}:
+ 1.0      0.45077
+ 0.45077  1.0
+
+julia&gt; T = Matrix(Φ&#39;, KineticOperator(), Φ)
+2×2 Array{Float64,2}:
+ 2.16431   0.167013
+ 0.167013  0.760033
+
+julia&gt; V₁ = Matrix(Φ&#39;, CoulombPotential(-Z[1], R[1]), Φ)
+2×2 Array{Float64,2}:
+ -4.13983  -1.10291
+ -1.10291  -1.26525
+
+julia&gt; V₂ = Matrix(Φ&#39;, CoulombPotential(-Z[2], R[2]), Φ)
+2×2 Array{Float64,2}:
+ -0.67723   -0.411305
+ -0.411305  -1.22662
+
+julia&gt; eris = ElectronRepulsionIntegrals(Φ)
+2 ElectronRepulsionIntegrals stored in a Array{Float64,4} with 6 unique integrals:
+#1     1   1   1   1: 1.307152e+00
+#2     1   2   1   1: 4.372793e-01
+#3     1   2   1   2: 1.772671e-01
+#4     2   2   1   1: 6.057034e-01
+#5     2   2   1   2: 3.117946e-01
+#6     2   2   2   2: 7.746084e-01</code></pre><h2 id="Reference"><a class="docs-heading-anchor" href="#Reference">Reference</a><a id="Reference-1"></a><a class="docs-heading-anchor-permalink" href="#Reference" title="Permalink"></a></h2><p>Equations tagged (SO.X.Y) refer to</p><pre><code class="language-none">- Szabo, A., &amp; Ostlund, N. S. (1996). Modern Quantum Chemistry:
+  Introduction to Advanced Electronic Structure Theory (Dover Books on
+  Chemistry). Dover Publications.</code></pre><ul><li><a href="#Gaussians.STO_NG"><code>Gaussians.STO_NG</code></a></li><li><a href="#Gaussians.sto_g"><code>Gaussians.sto_g</code></a></li></ul><article class="docstring"><header><a class="docstring-binding" id="Gaussians.STO_NG" href="#Gaussians.STO_NG"><code>Gaussians.STO_NG</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">STO_NG(n, ℓ, α, c, R)</code></pre><p>Slater-type orbital constructed from <code>N</code> primitive Gaussian-type orbitals with principal quantum numbers <code>n</code>, angular momenta <code>ℓ</code>, exponents <code>α</code>, and contraction coefficients <code>c</code>, all of which are centred at <code>R</code> (which may be a scalar for linear molecules or an <code>AbstractVector</code> with 3 elements for arbitrary molecules).</p><p>So far, only 1s primitive Gaussians, which are written as</p><div>\[\begin{equation}
+\tag{SO.B.1}
+g_{\mathrm{1s}}(\alpha) = (2\alpha/\pi)^{3/4}\exp(-\alpha r^2)
+\end{equation}\]</div><p>are supported.</p><pre><code class="language-julia-repl">julia&gt; STO_NG([1], [0], [0.5], [1.0])
+STO-1G basis function:
+    0.423777 × 1s(  0.500000)
+
+
+julia&gt; STO_NG([1,1], [0,0], [0.5,0.25], [1,1]/√2)
+STO-2G basis function:
+    0.299656 × 1s(  0.500000)
+    0.178176 × 1s(  0.250000)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaAtoms/Gaussians.jl/blob/98fab8e646ea73cd66bfb308a9e597e744ec835b/src/sto_ng.jl#LL3-L32">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Gaussians.sto_g" href="#Gaussians.sto_g"><code>Gaussians.sto_g</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">sto_g(N, R[, ζ=1.0])</code></pre><p>Standard contractions for <span>$N=1,2,3$</span>, centred at <span>$R$</span>, and with exponent <span>$ζ$</span>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaAtoms/Gaussians.jl/blob/98fab8e646ea73cd66bfb308a9e597e744ec835b/src/sto_ng.jl#LL322-L327">source</a></section></article></article></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 30 June 2020 17:28">Tuesday 30 June 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
